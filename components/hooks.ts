@@ -1,19 +1,20 @@
 import React, { useState } from "react";
 import {
-  Editor,
   EditorState,
   RichUtils,
   convertToRaw,
   convertFromRaw,
   RawDraftContentState,
+  getDefaultKeyBinding,
+  KeyBindingUtil,
 } from "draft-js";
 import "draft-js/dist/Draft.css";
 import { savePostToDatabase } from "./savePostToDatabase";
 // import { getPost } from "@/infra/repositories/localstorage/post/getPost";
 // import { createPost } from "@/infra/repositories/localstorage/post/createPost";
-import { getPost } from "@/infra/repositories/prisma/post/getPost";
-import { createPost } from "@/infra/repositories/prisma/post/createPost";
-
+import Editor, { createEditorStateWithText } from "@draft-js-plugins/editor";
+import createInlineToolbarPlugin from "@draft-js-plugins/inline-toolbar";
+import "@draft-js-plugins/inline-toolbar/lib/plugin.css";
 type Props = {
   rawContentString?: string;
   onSaveClick?: (rawContentState: any) => void;
@@ -21,21 +22,28 @@ type Props = {
 
 export const useDraftjs = ({ rawContentString, onSaveClick }: Props) => {
   const [editorState, setEditorState] = useState(() => {
-    if (rawContentString) {
-      const parsedRawContentState = JSON.parse(rawContentString);
-      const contentState = convertFromRaw(parsedRawContentState);
-      const newEditorState = EditorState.createWithContent(contentState);
-      return newEditorState;
-    } else {
-      return EditorState.createEmpty();
-    }
+    return EditorState.createEmpty();
   });
   const [editorEnabled, setEditorEnabled] = useState(false);
+
+  const { hasCommandModifier } = KeyBindingUtil;
+
+  const myKeyBindingFn = (e: any) => {
+    if (e.keyCode === 83 && hasCommandModifier(e)) {
+      return "myeditor-save";
+    }
+    return getDefaultKeyBinding(e);
+  };
 
   const handleKeyCommand = (
     command: string,
     editorState: EditorState
   ): "handled" | "not-handled" => {
+    // Comamnd + Sで保存
+    if (command === "myeditor-save") {
+      handleSaveClick();
+      return "handled";
+    }
     const newState = RichUtils.handleKeyCommand(editorState, command);
     if (newState) {
       setEditorState(newState);
@@ -44,6 +52,9 @@ export const useDraftjs = ({ rawContentString, onSaveClick }: Props) => {
     return "not-handled";
   };
 
+  /**
+   * inlineStyle変更
+   */
   const onBoldClick = () => {
     setEditorState(RichUtils.toggleInlineStyle(editorState, "BOLD"));
   };
@@ -54,6 +65,13 @@ export const useDraftjs = ({ rawContentString, onSaveClick }: Props) => {
 
   const onUnderlineClick = () => {
     setEditorState(RichUtils.toggleInlineStyle(editorState, "UNDERLINE"));
+  };
+
+  /**
+   * blockType変更
+   */
+  const onH1Click = () => {
+    setEditorState(RichUtils.toggleBlockType(editorState, "header-one"));
   };
 
   /**
@@ -69,17 +87,33 @@ export const useDraftjs = ({ rawContentString, onSaveClick }: Props) => {
     );
   };
 
+  /**
+   * カラー変更
+   */
+  const onRedClick = () => {
+    setEditorState(RichUtils.toggleInlineStyle(editorState, "RED"));
+  };
+
   const handleSaveClick = async () => {
     const contentState = editorState.getCurrentContent();
     const rawContentState = convertToRaw(contentState);
     // const contentString = JSON.stringify(rawContentState);
     // await savePostToDatabase(null, contentString);
     // createPost(rawContentState);
+    console.log("rawContentState", rawContentState);
     onSaveClick && onSaveClick(rawContentState);
   };
 
   React.useEffect(() => {
     setEditorEnabled(true);
+
+    if (rawContentString) {
+      const parsedRawContentState = JSON.parse(rawContentString);
+      const contentState = convertFromRaw(parsedRawContentState);
+      console.log("contentState", contentState);
+      const newEditorState = EditorState.createWithContent(contentState);
+      setEditorState(newEditorState);
+    }
   }, []);
 
   return {
@@ -90,8 +124,11 @@ export const useDraftjs = ({ rawContentString, onSaveClick }: Props) => {
     onBoldClick,
     onItalicClick,
     onUnderlineClick,
+    onH1Click,
     onOrderedListClick,
     onUnorderedListClick,
     handleSaveClick,
+    myKeyBindingFn,
+    onRedClick,
   };
 };
