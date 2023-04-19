@@ -5,58 +5,32 @@ import {
   RichUtils,
   convertToRaw,
   convertFromRaw,
+  RawDraftContentState,
 } from "draft-js";
 import "draft-js/dist/Draft.css";
-import { savePostToDatabase } from "./savePostToDatabase";
+import { useDraftjs } from "./hooks";
 
-export const RichTextEditor: React.FC = () => {
-  const [editorState, setEditorState] = useState(() =>
-    EditorState.createEmpty()
-  );
+type Props = {
+  rawContentString?: string;
+  onSaveClick: (rawContentString: any) => void;
+};
 
-  const handleKeyCommand = (
-    command: string,
-    editorState: EditorState
-  ): "handled" | "not-handled" => {
-    const newState = RichUtils.handleKeyCommand(editorState, command);
-    if (newState) {
-      setEditorState(newState);
-      return "handled";
-    }
-    return "not-handled";
-  };
-
-  const onBoldClick = () => {
-    setEditorState(RichUtils.toggleInlineStyle(editorState, "BOLD"));
-  };
-
-  const onItalicClick = () => {
-    setEditorState(RichUtils.toggleInlineStyle(editorState, "ITALIC"));
-  };
-
-  const onUnderlineClick = () => {
-    setEditorState(RichUtils.toggleInlineStyle(editorState, "UNDERLINE"));
-  };
-
-  /**
-   * List
-   */
-  const onOrderedListClick = () => {
-    setEditorState(RichUtils.toggleBlockType(editorState, "ordered-list-item"));
-  };
-
-  const onUnorderedListClick = () => {
-    setEditorState(
-      RichUtils.toggleBlockType(editorState, "unordered-list-item")
-    );
-  };
-
-  const onSaveClick = async () => {
-    const contentState = editorState.getCurrentContent();
-    const rawContentState = convertToRaw(contentState);
-    const contentString = JSON.stringify(rawContentState);
-    await savePostToDatabase(null, contentString);
-  };
+export const RichTextEditor: React.FC<Props> = ({
+  rawContentString,
+  onSaveClick,
+}) => {
+  const {
+    editorState,
+    setEditorState,
+    editorEnabled,
+    onBoldClick,
+    onItalicClick,
+    onUnderlineClick,
+    onOrderedListClick,
+    onUnorderedListClick,
+    handleSaveClick,
+    handleKeyCommand,
+  } = useDraftjs({ rawContentString, onSaveClick });
 
   return (
     <div style={{}}>
@@ -73,13 +47,16 @@ export const RichTextEditor: React.FC = () => {
           width: "400px",
         }}
       >
-        <Editor
-          editorState={editorState}
-          handleKeyCommand={handleKeyCommand}
-          onChange={setEditorState}
-        />
+        {editorEnabled && (
+          <Editor
+            editorKey="editor"
+            editorState={editorState}
+            handleKeyCommand={handleKeyCommand}
+            onChange={setEditorState}
+          />
+        )}
       </div>
-      <button onClick={onSaveClick}>Save</button>
+      <button onClick={handleSaveClick}>Save</button>
     </div>
   );
 };

@@ -1,5 +1,5 @@
-export async function updatePost(id: number, contentString: string) {
-  const response = await fetch("/api/posts", {
+export async function updatePost(id: number, contentString: any) {
+  const response = await fetch(`/api/posts/${id}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",

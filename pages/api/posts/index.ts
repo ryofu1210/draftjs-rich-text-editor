@@ -22,11 +22,12 @@ export default async function handler(
       break;
     case "POST":
       try {
-        const newPostPayload = PostBodySchema.parse(req.body);
+        // const newPostPayload = PostBodySchema.parse(req.body);
+        const { content } = req.body;
 
         const createdPost = await prisma.post.create({
           data: {
-            content: newPostPayload.content,
+            content,
           },
         });
 

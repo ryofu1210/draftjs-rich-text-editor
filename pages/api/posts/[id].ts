@@ -10,13 +10,12 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  const id = Number(req.query.id);
   if (req.method === "GET") {
     try {
-      const id = req.query.id as string;
-
       const prismaPost = await prisma.post.findUnique({
         where: {
-          id: Number(id),
+          id,
         },
       });
 
@@ -24,6 +23,25 @@ export default async function handler(
         res.status(404).json({ message: "post not found" });
         return;
       }
+
+      res.status(200).json({
+        id: prismaPost.id,
+        content: JSON.stringify(prismaPost.content),
+      });
+    } catch (error) {
+      res.status(400).json({ message: "Bad Request" });
+      return;
+    }
+  } else if (req.method === "PUT") {
+    try {
+      const prismaPost = await prisma.post.update({
+        where: {
+          id,
+        },
+        data: {
+          content: req.body.content,
+        },
+      });
 
       res.status(200).json({
         id: prismaPost.id,

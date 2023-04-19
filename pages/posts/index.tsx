@@ -1,5 +1,5 @@
 import React from "react";
-import { getPosts } from "@/infra/repositories/post/getPosts";
+import { getPosts } from "@/infra/repositories/prisma/post/getPosts";
 import { Post } from "@/types/Post";
 import Link from "next/link";
 
@@ -17,11 +17,12 @@ export default function PostIndexPage() {
   return (
     <div>
       <h1>PostIndex</h1>
+      <Link href={`/posts/new`}>新規Post作成</Link>
       <table>
         {posts.map((post) => (
           <tr key={post.id}>
             <td>
-              <Link href={`/posts/${post.id}`} >{post.id}</Link>
+              <Link href={`/posts/${post.id}`}>{post.id}</Link>
             </td>
             <td>{post.content}</td>
           </tr>
