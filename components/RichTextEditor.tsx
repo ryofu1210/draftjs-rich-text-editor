@@ -85,15 +85,7 @@ export const RichTextEditor: React.FC<Props> = ({
       <button onClick={onRedClick}>Red</button>
       <button onClick={onBlueClick}>Blue</button>
       <button onClick={onYellowClick}>Yellow</button>
-      <div
-        style={{
-          margin: "10px",
-          border: "1px solid black",
-          minHeight: "200px",
-          width: "400px",
-        }}
-        onClick={focus}
-      >
+      <EditorContainer onClick={focus}>
         <Editor
           editorKey="editor"
           editorState={editorState}
@@ -117,8 +109,32 @@ export const RichTextEditor: React.FC<Props> = ({
             </>
           )}
         </InlineToolbar>
-      </div>
+      </EditorContainer>
       <button onClick={handleSaveClick}>Save</button>
+    </div>
+  );
+};
+
+type EditorContainerProps = {
+  children: React.ReactNode;
+  onClick: () => void;
+};
+
+const EditorContainer: React.FC<EditorContainerProps> = ({
+  children,
+  onClick,
+}) => {
+  return (
+    <div
+      style={{
+        margin: "10px",
+        border: "1px solid black",
+        minHeight: "200px",
+        width: "400px",
+      }}
+      onClick={onClick}
+    >
+      {children}
     </div>
   );
 };
