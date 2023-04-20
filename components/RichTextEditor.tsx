@@ -7,43 +7,62 @@ import {
   convertFromRaw,
   RawDraftContentState,
   AtomicBlockUtils,
+  ContentBlock,
 } from "draft-js";
 import "draft-js/dist/Draft.css";
 import { useDraftjs } from "./hooks";
 import Editor, { createEditorStateWithText } from "@draft-js-plugins/editor";
-import createInlineToolbarPlugin, {
+// import createInlineToolbarPlugin, {
+//   Separator,
+// } from "@draft-js-plugins/inline-toolbar";
+// import "@draft-js-plugins/inline-toolbar/lib/plugin.css";
+import createToolbarPlugin, {
   Separator,
-} from "@draft-js-plugins/inline-toolbar";
-import "@draft-js-plugins/inline-toolbar/lib/plugin.css";
+} from "@draft-js-plugins/static-toolbar";
+import "@draft-js-plugins/static-toolbar/lib/plugin.css";
 import {
   ItalicButton,
   BoldButton,
+  SubButton,
   UnderlineButton,
   HeadlineOneButton,
   HeadlineTwoButton,
   HeadlineThreeButton,
+  UnorderedListButton,
+  OrderedListButton,
+  BlockquoteButton,
+  createInlineStyleButton,
+  createBlockStyleButton,
 } from "@draft-js-plugins/buttons";
 import createLinkPlugin from "@draft-js-plugins/anchor";
+import editorStyles from "./editorStyle.module.css";
+import StrikethroughSIcon from "@mui/icons-material/StrikethroughS";
+// Tooltip
+import { Tooltip } from "@mui/material";
+
+function customBlockStyleFn(contentBlock: ContentBlock) {
+  const type = contentBlock.getType();
+  if (type === "blockquote") {
+    return "superFancyBlockquote";
+  }
+  return "";
+}
 
 type Props = {
   rawContentString?: string;
   onSaveClick: (rawContentString: any) => void;
 };
 
-// const inlineToolbarPlugin = createInlineToolbarPlugin();
-// const { InlineToolbar } = inlineToolbarPlugin;
-// const plugins = [inlineToolbarPlugin];
-
 export const RichTextEditor: React.FC<Props> = ({
   rawContentString,
   onSaveClick,
 }) => {
-  const { plugins, InlineToolbar, LinkButton } = useMemo(() => {
+  const { plugins, Toolbar, LinkButton } = useMemo(() => {
     const linkPlugin = createLinkPlugin();
-    const inlineToolbarPlugin = createInlineToolbarPlugin();
+    const staticToolbarPlugin = createToolbarPlugin();
     return {
-      plugins: [inlineToolbarPlugin, linkPlugin],
-      InlineToolbar: inlineToolbarPlugin.InlineToolbar,
+      plugins: [staticToolbarPlugin, linkPlugin],
+      Toolbar: staticToolbarPlugin.Toolbar,
       LinkButton: linkPlugin.LinkButton,
     };
   }, []);
@@ -65,6 +84,8 @@ export const RichTextEditor: React.FC<Props> = ({
     onYellowClick,
     customStyleMap,
     handleDroppedFiles,
+    toggleBlockType,
+    toggleInlineStyle,
   } = useDraftjs({ rawContentString, onSaveClick });
 
   // editorのrefオブジェクト
@@ -76,16 +97,15 @@ export const RichTextEditor: React.FC<Props> = ({
 
   return (
     <div style={{}}>
-      <button onClick={onBoldClick}>Bold</button>
-      <button onClick={onItalicClick}>Italic</button>
-      <button onClick={onUnderlineClick}>Underline</button>
-      <button onClick={onH1Click}>H1</button>
-      <button onClick={onOrderedListClick}>Ordered List</button>
-      <button onClick={onUnorderedListClick}>Unordered List</button>
-      <button onClick={onRedClick}>Red</button>
-      <button onClick={onBlueClick}>Blue</button>
-      <button onClick={onYellowClick}>Yellow</button>
-      <EditorContainer onClick={focus}>
+      <BlockStyleControls
+        editorState={editorState}
+        onToggle={toggleBlockType}
+      />
+      <InlineStyleControls
+        editorState={editorState}
+        onToggle={toggleInlineStyle}
+      />
+      <div className={editorStyles.editor} onClick={focus}>
         <Editor
           editorKey="editor"
           editorState={editorState}
@@ -94,47 +114,139 @@ export const RichTextEditor: React.FC<Props> = ({
           keyBindingFn={myKeyBindingFn}
           plugins={plugins}
           customStyleMap={customStyleMap}
+          blockStyleFn={customBlockStyleFn}
           ref={editorRef}
         />
-        <InlineToolbar>
-          {(externalProps) => (
-            <>
-              <ItalicButton {...externalProps} />
-              <BoldButton {...externalProps} />
-              <UnderlineButton {...externalProps} />
-              <Separator />
-              <HeadlineOneButton {...externalProps} />
-              <HeadlineTwoButton {...externalProps} />
-              <HeadlineThreeButton {...externalProps} />
-            </>
-          )}
-        </InlineToolbar>
-      </EditorContainer>
+      </div>
       <button onClick={handleSaveClick}>Save</button>
     </div>
   );
 };
 
-type EditorContainerProps = {
-  children: React.ReactNode;
-  onClick: () => void;
+type StyleButtonProps = {
+  onToggle: (style: string) => void;
+  style: string;
+  active: boolean;
+  label: React.ReactNode;
 };
 
-const EditorContainer: React.FC<EditorContainerProps> = ({
-  children,
-  onClick,
-}) => {
+const StyleButton = (props: StyleButtonProps) => {
+  const onToggle = (e: any) => {
+    e.preventDefault();
+    props.onToggle(props.style);
+  };
+
+  let className = "RichEditor-styleButton";
+  if (props.active) {
+    className += " RichEditor-activeButton";
+  }
+
   return (
-    <div
-      style={{
-        margin: "10px",
-        border: "1px solid black",
-        minHeight: "200px",
-        width: "400px",
-      }}
-      onClick={onClick}
-    >
-      {children}
+    <span className={className} onMouseDown={onToggle}>
+      {props.label}
+    </span>
+  );
+};
+
+const BLOCK_TYPES = [
+  { label: "H1", style: "header-one" },
+  { label: "H2", style: "header-two" },
+  { label: "H3", style: "header-three" },
+  { label: "H4", style: "header-four" },
+  { label: "H5", style: "header-five" },
+  { label: "H6", style: "header-six" },
+  { label: "Blockquote", style: "blockquote" },
+  { label: "UL", style: "unordered-list-item" },
+  { label: "OL", style: "ordered-list-item" },
+  { label: "Code Block", style: "code-block" },
+];
+
+type BlockStyleControlsProps = {
+  editorState: EditorState;
+  onToggle: (blockType: string) => void;
+};
+
+const BlockStyleControls = (props: BlockStyleControlsProps) => {
+  const { editorState } = props;
+  const selection = editorState.getSelection();
+  const blockType = editorState
+    .getCurrentContent()
+    .getBlockForKey(selection.getStartKey())
+    .getType();
+
+  return (
+    <div className="RichEditor-controls">
+      {BLOCK_TYPES.map((type) => (
+        <StyleButton
+          key={type.label}
+          active={type.style === blockType}
+          label={type.label}
+          onToggle={props.onToggle}
+          style={type.style}
+        />
+      ))}
     </div>
   );
 };
+
+var INLINE_STYLES = [
+  { label: "Bold", style: "BOLD" },
+  { label: "Italic", style: "ITALIC" },
+  { label: "Underline", style: "UNDERLINE" },
+  { label: "Monospace", style: "CODE" },
+  {
+    label: (
+      <Tooltip title="取り消し線" placement="top">
+        <StrikethroughSIcon />
+      </Tooltip>
+    ),
+    style: "STRIKETHROUGH",
+  },
+];
+
+type InlineStyleControlsProps = {
+  editorState: EditorState;
+  onToggle: (inlineStyle: string) => void;
+};
+
+const InlineStyleControls = (props: InlineStyleControlsProps) => {
+  const currentStyle = props.editorState.getCurrentInlineStyle();
+
+  return (
+    <div className="RichEditor-controls">
+      {INLINE_STYLES.map((type) => (
+        <StyleButton
+          key={type.style}
+          active={currentStyle.has(type.style)}
+          label={type.label}
+          onToggle={props.onToggle}
+          style={type.style}
+        />
+      ))}
+    </div>
+  );
+};
+
+// type EditorContainerProps = {
+//   children: React.ReactNode;
+//   onClick: () => void;
+// };
+
+// const EditorContainer: React.FC<EditorContainerProps> = ({
+//   children,
+//   onClick,
+// }) => {
+//   return (
+//     <div
+//       style={{
+//         margin: "10px",
+//         border: "1px solid black",
+//         minHeight: "200px",
+//         width: "800px",
+//       }}
+//       onClick={onClick}
+//     >
+//       {children}
+//     </div>
+//   );
+// };

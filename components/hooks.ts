@@ -22,11 +22,18 @@ type Props = {
   onSaveClick?: (rawContentState: any) => void;
 };
 
+const colorStyleMap = {
+  RED: { color: "red" },
+  YELLOW: { color: "yellow" },
+  BLUE: { color: "blue" },
+};
+
 const customStyleMap = {
-  red: { color: "red" },
-  yellow: { color: "yellow" },
-  blue: { color: "blue" },
-} as const;
+  ...colorStyleMap,
+  STRIKETHROUGH: {
+    textDecoration: "line-through",
+  },
+};
 
 export const useDraftjs = ({ rawContentString, onSaveClick }: Props) => {
   const [editorState, setEditorState] = useState(() => {
@@ -98,13 +105,13 @@ export const useDraftjs = ({ rawContentString, onSaveClick }: Props) => {
    * カラー変更
    */
   const onRedClick = () => {
-    setEditorState(RichUtils.toggleInlineStyle(editorState, "red"));
+    setEditorState(RichUtils.toggleInlineStyle(editorState, "RED"));
   };
   const onBlueClick = () => {
-    setEditorState(RichUtils.toggleInlineStyle(editorState, "blue"));
+    setEditorState(RichUtils.toggleInlineStyle(editorState, "BLUE"));
   };
   const onYellowClick = () => {
-    setEditorState(RichUtils.toggleInlineStyle(editorState, "yellow"));
+    setEditorState(RichUtils.toggleInlineStyle(editorState, "YELLOW"));
   };
 
   const handleSaveClick = async () => {
@@ -136,6 +143,14 @@ export const useDraftjs = ({ rawContentString, onSaveClick }: Props) => {
     // eslint-disable-next-line
   }, []);
 
+  const toggleBlockType = (blockType: string) => {
+    setEditorState(RichUtils.toggleBlockType(editorState, blockType));
+  };
+
+  const toggleInlineStyle = (inlineStyle: string) => {
+    setEditorState(RichUtils.toggleInlineStyle(editorState, inlineStyle));
+  };
+
   return {
     editorState,
     setEditorState,
@@ -154,6 +169,8 @@ export const useDraftjs = ({ rawContentString, onSaveClick }: Props) => {
     onYellowClick,
     customStyleMap,
     handleDroppedFiles,
+    toggleBlockType,
+    toggleInlineStyle
   };
 };
 
