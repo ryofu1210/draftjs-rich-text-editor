@@ -51,7 +51,6 @@ export const RichTextEditor: React.FC<Props> = ({
   const {
     editorState,
     setEditorState,
-    editorEnabled,
     onBoldClick,
     onItalicClick,
     onUnderlineClick,
@@ -67,6 +66,13 @@ export const RichTextEditor: React.FC<Props> = ({
     customStyleMap,
     handleDroppedFiles,
   } = useDraftjs({ rawContentString, onSaveClick });
+
+  // editorのrefオブジェクト
+  const editorRef = React.useRef<Editor>(null);
+
+  const focus = () => {
+    editorRef.current?.focus();
+  };
 
   return (
     <div style={{}}>
@@ -86,33 +92,31 @@ export const RichTextEditor: React.FC<Props> = ({
           minHeight: "200px",
           width: "400px",
         }}
+        onClick={focus}
       >
-        {editorEnabled && (
-          <>
-            <Editor
-              editorKey="editor"
-              editorState={editorState}
-              handleKeyCommand={handleKeyCommand}
-              onChange={setEditorState}
-              keyBindingFn={myKeyBindingFn}
-              plugins={plugins}
-              customStyleMap={customStyleMap}
-            />
-            <InlineToolbar>
-              {(externalProps) => (
-                <>
-                  <ItalicButton {...externalProps} />
-                  <BoldButton {...externalProps} />
-                  <UnderlineButton {...externalProps} />
-                  <Separator />
-                  <HeadlineOneButton {...externalProps} />
-                  <HeadlineTwoButton {...externalProps} />
-                  <HeadlineThreeButton {...externalProps} />
-                </>
-              )}
-            </InlineToolbar>
-          </>
-        )}
+        <Editor
+          editorKey="editor"
+          editorState={editorState}
+          handleKeyCommand={handleKeyCommand}
+          onChange={setEditorState}
+          keyBindingFn={myKeyBindingFn}
+          plugins={plugins}
+          customStyleMap={customStyleMap}
+          ref={editorRef}
+        />
+        <InlineToolbar>
+          {(externalProps) => (
+            <>
+              <ItalicButton {...externalProps} />
+              <BoldButton {...externalProps} />
+              <UnderlineButton {...externalProps} />
+              <Separator />
+              <HeadlineOneButton {...externalProps} />
+              <HeadlineTwoButton {...externalProps} />
+              <HeadlineThreeButton {...externalProps} />
+            </>
+          )}
+        </InlineToolbar>
       </div>
       <button onClick={handleSaveClick}>Save</button>
     </div>
