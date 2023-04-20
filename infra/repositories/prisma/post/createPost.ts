@@ -8,5 +8,5 @@ export async function createPost(contentString: any) {
   });
   const result = await response.json();
   console.log("Content saved with ID:", result.id);
-  return result
+  return result;
 }

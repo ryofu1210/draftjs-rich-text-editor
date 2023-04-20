@@ -7,6 +7,8 @@ import {
   RawDraftContentState,
   getDefaultKeyBinding,
   KeyBindingUtil,
+  BlockMap,
+  ContentState,
 } from "draft-js";
 import "draft-js/dist/Draft.css";
 import { savePostToDatabase } from "./savePostToDatabase";
@@ -20,12 +22,17 @@ type Props = {
   onSaveClick?: (rawContentState: any) => void;
 };
 
+const customStyleMap = {
+  red: { color: "red" },
+  yellow: { color: "yellow" },
+  blue: { color: "blue" },
+} as const;
+
 export const useDraftjs = ({ rawContentString, onSaveClick }: Props) => {
   const [editorState, setEditorState] = useState(() => {
     return EditorState.createEmpty();
   });
   const [editorEnabled, setEditorEnabled] = useState(false);
-
   const { hasCommandModifier } = KeyBindingUtil;
 
   const myKeyBindingFn = (e: any) => {
@@ -91,7 +98,13 @@ export const useDraftjs = ({ rawContentString, onSaveClick }: Props) => {
    * カラー変更
    */
   const onRedClick = () => {
-    setEditorState(RichUtils.toggleInlineStyle(editorState, "RED"));
+    setEditorState(RichUtils.toggleInlineStyle(editorState, "red"));
+  };
+  const onBlueClick = () => {
+    setEditorState(RichUtils.toggleInlineStyle(editorState, "blue"));
+  };
+  const onYellowClick = () => {
+    setEditorState(RichUtils.toggleInlineStyle(editorState, "yellow"));
   };
 
   const handleSaveClick = async () => {
@@ -104,6 +117,10 @@ export const useDraftjs = ({ rawContentString, onSaveClick }: Props) => {
     onSaveClick && onSaveClick(rawContentState);
   };
 
+  const handleDroppedFiles = (selection: any, files: any) => {
+    console.log("handleDroppedFiles", selection, files);
+  };
+
   React.useEffect(() => {
     setEditorEnabled(true);
 
@@ -111,9 +128,12 @@ export const useDraftjs = ({ rawContentString, onSaveClick }: Props) => {
       const parsedRawContentState = JSON.parse(rawContentString);
       const contentState = convertFromRaw(parsedRawContentState);
       console.log("contentState", contentState);
+      // const newEditorText = contentStateToText(contentState);
+      // const newEditorState = createEditorStateWithText(newEditorText);
       const newEditorState = EditorState.createWithContent(contentState);
       setEditorState(newEditorState);
     }
+    // eslint-disable-next-line
   }, []);
 
   return {
@@ -130,5 +150,15 @@ export const useDraftjs = ({ rawContentString, onSaveClick }: Props) => {
     handleSaveClick,
     myKeyBindingFn,
     onRedClick,
+    onBlueClick,
+    onYellowClick,
+    customStyleMap,
+    handleDroppedFiles,
   };
+};
+
+const contentStateToText = (contentState: ContentState) => {
+  const blockMap = contentState.getBlockMap();
+  const textArray = blockMap.map((block) => block?.getText()).toArray();
+  return textArray.join("\n");
 };
