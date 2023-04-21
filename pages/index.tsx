@@ -20,16 +20,6 @@ const columns: GridColDef[] = [
     ),
   },
   { field: "content", headerName: "Content", width: 1000 },
-
-  // {
-  //   field: "visitors",
-  //   headerName: t("objects.Room.Visitors"),
-  //   renderCell: (params: GridRenderCellParams<any, any>) => (
-  //     <p>{`${params.row.totalVisitors} / ${params.row.totalInvitees}`}</p>
-  //   ),
-  //   width: 150,
-  //   sortable: true,
-  // },
 ];
 
 export default function Home() {
@@ -38,7 +28,6 @@ export default function Home() {
   React.useEffect(() => {
     const fetchPosts = async () => {
       const posts = await getPosts();
-      // setPosts(posts);
       setRows(
         posts.map((post: any) => ({
           id: post.id,
