@@ -30,6 +30,7 @@ Draft.jsを使ったリッチテキストエディタ
 # 環境構築手順
 ```shell
 docker-compose up -d
+npx prisma migrate deploy
 npm run dev
 ```
 
