@@ -93,6 +93,7 @@ export const RichTextEditor: React.FC<Props> = ({
     toggleBlockType,
     toggleInlineStyle,
     toggleColorStyle,
+    onTab,
   } = useDraftjs({ rawContentString, onSaveClick });
 
   // editorのrefオブジェクト
@@ -127,6 +128,7 @@ export const RichTextEditor: React.FC<Props> = ({
           customStyleMap={customStyleMap}
           blockStyleFn={customBlockStyleFn}
           ref={editorRef}
+          onTab={onTab}
         />
         <InlineToolbar>
           {() => (
@@ -175,7 +177,22 @@ const BLOCK_TYPES = [
   },
   {
     label: (
-      <Tooltip title="箇条書き" placement="top">
+      <Tooltip
+        title={
+          <>
+            <p>箇条書き</p>
+            <p>
+              <span>Tab</span>
+              でインデントを増やす
+            </p>
+            <p>
+              <span>Shift + Tab</span>
+              でインデントを減らす
+            </p>
+          </>
+        }
+        placement="top"
+      >
         <FormatListBulletedIcon />
       </Tooltip>
     ),
@@ -183,7 +200,22 @@ const BLOCK_TYPES = [
   },
   {
     label: (
-      <Tooltip title="順序付きリスト" placement="top">
+      <Tooltip
+        title={
+          <>
+            <p>順序付きリスト</p>
+            <p>
+              <span>Tab</span>
+              でインデントを増やす
+            </p>
+            <p>
+              <span>Shift + Tab</span>
+              でインデントを減らす
+            </p>
+          </>
+        }
+        placement="top"
+      >
         <FormatListNumberedIcon />
       </Tooltip>
     ),

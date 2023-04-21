@@ -154,6 +154,11 @@ export const useDraftjs = ({ rawContentString, onSaveClick }: Props) => {
     console.log(rawContentState);
   }, [editorState]);
 
+  const onTab = (e: any) => {
+    const newState = RichUtils.onTab(e, editorState, 4);
+    setEditorState(newState);
+  };
+
   return {
     editorState,
     setEditorState,
@@ -166,5 +171,6 @@ export const useDraftjs = ({ rawContentString, onSaveClick }: Props) => {
     toggleBlockType,
     toggleInlineStyle,
     toggleColorStyle,
+    onTab
   };
 };
