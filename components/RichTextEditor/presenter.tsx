@@ -44,12 +44,14 @@ import FormatUnderlinedIcon from "@mui/icons-material/FormatUnderlined";
 import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
 import FormatListNumberedIcon from "@mui/icons-material/FormatListNumbered";
 import ClearAllIcon from "@mui/icons-material/ClearAll";
+import FormatQuoteIcon from "@mui/icons-material/FormatQuote";
 // Tooltip
 import { Tooltip } from "@mui/material";
 import { StyleButton } from "./internal/StyleButton";
 import { ColorStyleControls } from "./internal/ColorStyleControls";
 import { CustomFontIcon } from "./internal/CustomFontIcon";
 import Icon from "@mui/material/Icon";
+import createLinkifyPlugin from "@draft-js-plugins/linkify";
 
 /**
  * BlockTypeに割り当てるスタイル（クラス名）を変更する
@@ -71,13 +73,12 @@ export const RichTextEditor: React.FC<Props> = ({
   rawContentString,
   onSaveClick,
 }) => {
-  const { plugins, InlineToolbar, LinkButton } = useMemo(() => {
-    const linkPlugin = createLinkPlugin();
+  const { plugins, InlineToolbar } = useMemo(() => {
     const inlineToolbarPlugin = createInlineToolbarPlugin();
+    const linkifyPlugin = createLinkifyPlugin();
     return {
-      plugins: [inlineToolbarPlugin, linkPlugin],
+      plugins: [inlineToolbarPlugin, linkifyPlugin],
       InlineToolbar: inlineToolbarPlugin.InlineToolbar,
-      LinkButton: linkPlugin.LinkButton,
     };
   }, []);
 
@@ -191,7 +192,7 @@ const BLOCK_TYPES = [
   {
     label: (
       <Tooltip title="引用タグ" placement="top">
-        <ClearAllIcon />
+        <FormatQuoteIcon />
       </Tooltip>
     ),
     style: "blockquote",
