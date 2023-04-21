@@ -11,6 +11,7 @@ import { ColorStyleControls } from "./internal/ColorStyleControls";
 import createLinkifyPlugin from "@draft-js-plugins/linkify";
 import { InlineStyleControls } from "./internal/InlineStyleControls";
 import { BlockStyleControls } from "./internal/BlockStyleControls";
+import Button from "@mui/material/Button";
 
 /**
  * BlockTypeに割り当てるスタイル（クラス名）を変更する
@@ -103,7 +104,7 @@ export const RichTextEditor: React.FC<Props> = ({
           )}
         </InlineToolbar>
       </div>
-      <button onClick={handleSaveClick}>Save</button>
+      <Button onClick={handleSaveClick} variant="contained">Save</Button>
     </div>
   );
 };

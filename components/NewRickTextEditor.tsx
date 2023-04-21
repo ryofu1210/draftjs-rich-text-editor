@@ -8,7 +8,6 @@ export const NewRichTextEditor = () => {
   const onSaveClick = async (rawContentString: any) => {
     const post = await createPost(rawContentString);
     console.log(post);
-    // TODO: ここでリダイレクトする
     router.push(`/posts/${post.id}`);
   };
   return <RichTextEditor onSaveClick={onSaveClick} />;
