@@ -1,12 +1,10 @@
 import React from "react";
 import { getPosts } from "@/infra/repositories/prisma/post/getPosts";
-import { Post } from "@/types/Post";
 import Link from "next/link";
 import { Layout } from "@components/Layout";
 import {
   DataGrid,
   GridColDef,
-  GridValueGetterParams,
   GridRenderCellParams,
 } from "@mui/x-data-grid";
 

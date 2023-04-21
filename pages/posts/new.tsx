@@ -1,5 +1,4 @@
 import React from "react";
-import { RichTextEditor } from "@components/RichTextEditor";
 import { NewRichTextEditor } from "@components/NewRickTextEditor";
 import { Layout } from "@components/Layout";
 import Link from "next/link";
