@@ -1,7 +1,8 @@
 # 概要
 Draft.jsを使ったリッチテキストエディタ
 
-![デモ動画](./public/リッチテキストエディタデモ動画.mov.gif)
+![リッチテキストエディタデモ動画 mov](https://user-images.githubusercontent.com/40624966/233601713-52af2572-f01a-4586-921f-8d9b6cffc53c.gif)
+
 
 ## ページ一覧
 - Post一覧(/)
