@@ -1,0 +1,16 @@
+version: '3.8'
+services:
+  db:
+    image: mysql/mysql-server:5.7.28
+    ports:
+      - 3306:3306
+    volumes:
+      - nextjs-draftjs-volume:/var/lib/mysql
+      - ./my.cnf:/usr/etc/my.cnf
+    environment:
+      - MYSQL_ROOT_HOST=%
+      - MYSQL_ROOT_PASSWORD=password
+
+volumes:
+  nextjs-draftjs-volume:
+
