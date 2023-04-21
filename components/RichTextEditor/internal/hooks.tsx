@@ -4,23 +4,12 @@ import {
   RichUtils,
   convertToRaw,
   convertFromRaw,
-  RawDraftContentState,
   getDefaultKeyBinding,
   KeyBindingUtil,
-  BlockMap,
-  ContentState,
   Modifier,
 } from "draft-js";
 import "draft-js/dist/Draft.css";
-// import { getPost } from "@/infra/repositories/localstorage/post/getPost";
-// import { createPost } from "@/infra/repositories/localstorage/post/createPost";
-import Editor, { createEditorStateWithText } from "@draft-js-plugins/editor";
-import createInlineToolbarPlugin from "@draft-js-plugins/inline-toolbar";
 import "@draft-js-plugins/inline-toolbar/lib/plugin.css";
-import FormatBoldIcon from "@mui/icons-material/FormatBold";
-import { Tooltip } from "@mui/material";
-import FormatColorTextIcon from "@mui/icons-material/FormatColorText";
-import { COLOR_STYLES } from "./constants";
 
 type Props = {
   rawContentString?: string;
@@ -171,6 +160,6 @@ export const useDraftjs = ({ rawContentString, onSaveClick }: Props) => {
     toggleBlockType,
     toggleInlineStyle,
     toggleColorStyle,
-    onTab
+    onTab,
   };
 };
