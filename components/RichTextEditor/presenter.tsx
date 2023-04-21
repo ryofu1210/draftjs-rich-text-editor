@@ -10,12 +10,13 @@ import {
   ContentBlock,
 } from "draft-js";
 import "draft-js/dist/Draft.css";
-import { useDraftjs } from "./hooks";
+import { useDraftjs } from "./internal/hooks";
+import { COLOR_STYLES } from "./internal/constants";
 import Editor, { createEditorStateWithText } from "@draft-js-plugins/editor";
-// import createInlineToolbarPlugin, {
-//   Separator,
-// } from "@draft-js-plugins/inline-toolbar";
-// import "@draft-js-plugins/inline-toolbar/lib/plugin.css";
+import createInlineToolbarPlugin, {
+  Separator as InlineSeparator,
+} from "@draft-js-plugins/inline-toolbar";
+import "@draft-js-plugins/inline-toolbar/lib/plugin.css";
 import createToolbarPlugin, {
   Separator,
 } from "@draft-js-plugins/static-toolbar";
@@ -35,7 +36,7 @@ import {
   createBlockStyleButton,
 } from "@draft-js-plugins/buttons";
 import createLinkPlugin from "@draft-js-plugins/anchor";
-import editorStyles from "./editorStyle.module.css";
+import editorStyles from "./internal/editorStyle.module.css";
 import StrikethroughSIcon from "@mui/icons-material/StrikethroughS";
 import FormatBoldIcon from "@mui/icons-material/FormatBold";
 import FormatItalicIcon from "@mui/icons-material/FormatItalic";
@@ -45,6 +46,10 @@ import FormatListNumberedIcon from "@mui/icons-material/FormatListNumbered";
 import ClearAllIcon from "@mui/icons-material/ClearAll";
 // Tooltip
 import { Tooltip } from "@mui/material";
+import { StyleButton } from "./internal/StyleButton";
+import { ColorStyleControls } from "./internal/ColorStyleControls";
+import { CustomFontIcon } from "./internal/CustomFontIcon";
+import Icon from "@mui/material/Icon";
 
 /**
  * BlockTypeに割り当てるスタイル（クラス名）を変更する
@@ -66,12 +71,12 @@ export const RichTextEditor: React.FC<Props> = ({
   rawContentString,
   onSaveClick,
 }) => {
-  const { plugins, Toolbar, LinkButton } = useMemo(() => {
+  const { plugins, InlineToolbar, LinkButton } = useMemo(() => {
     const linkPlugin = createLinkPlugin();
-    const staticToolbarPlugin = createToolbarPlugin();
+    const inlineToolbarPlugin = createInlineToolbarPlugin();
     return {
-      plugins: [staticToolbarPlugin, linkPlugin],
-      Toolbar: staticToolbarPlugin.Toolbar,
+      plugins: [inlineToolbarPlugin, linkPlugin],
+      InlineToolbar: inlineToolbarPlugin.InlineToolbar,
       LinkButton: linkPlugin.LinkButton,
     };
   }, []);
@@ -79,22 +84,14 @@ export const RichTextEditor: React.FC<Props> = ({
   const {
     editorState,
     setEditorState,
-    onBoldClick,
-    onItalicClick,
-    onUnderlineClick,
-    onH1Click,
-    onOrderedListClick,
-    onUnorderedListClick,
     handleSaveClick,
     handleKeyCommand,
     myKeyBindingFn,
-    onRedClick,
-    onBlueClick,
-    onYellowClick,
     customStyleMap,
     handleDroppedFiles,
     toggleBlockType,
     toggleInlineStyle,
+    toggleColorStyle,
   } = useDraftjs({ rawContentString, onSaveClick });
 
   // editorのrefオブジェクト
@@ -106,11 +103,13 @@ export const RichTextEditor: React.FC<Props> = ({
 
   return (
     <div style={{}}>
-      <div style={{ display: "flex", justifyContent: "start" }}>
-        <InlineStyleControls
-          editorState={editorState}
-          onToggle={toggleInlineStyle}
-        />
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "start",
+          alignItems: "center",
+        }}
+      >
         <BlockStyleControls
           editorState={editorState}
           onToggle={toggleBlockType}
@@ -128,38 +127,51 @@ export const RichTextEditor: React.FC<Props> = ({
           blockStyleFn={customBlockStyleFn}
           ref={editorRef}
         />
+        <InlineToolbar>
+          {() => (
+            <>
+              <InlineStyleControls
+                editorState={editorState}
+                onToggle={toggleInlineStyle}
+              />
+              <ColorStyleControls
+                editorState={editorState}
+                onToggle={toggleColorStyle}
+              />
+            </>
+          )}
+        </InlineToolbar>
       </div>
       <button onClick={handleSaveClick}>Save</button>
     </div>
   );
 };
 
-type StyleButtonProps = {
-  onToggle: (style: string) => void;
-  style: string;
-  active: boolean;
-  label: React.ReactNode;
-};
-
-const StyleButton = (props: StyleButtonProps) => {
-  const onToggle = (e: any) => {
-    e.preventDefault();
-    props.onToggle(props.style);
-  };
-
-  let className = "RichEditor-styleButton";
-  if (props.active) {
-    className += " RichEditor-activeButton";
-  }
-
-  return (
-    <span className={className} onMouseDown={onToggle}>
-      {props.label}
-    </span>
-  );
-};
-
 const BLOCK_TYPES = [
+  {
+    label: (
+      <Tooltip title="見出し1" placement="top">
+        <span>H1</span>
+      </Tooltip>
+    ),
+    style: "header-one",
+  },
+  {
+    label: (
+      <Tooltip title="見出し2" placement="top">
+        <span>H2</span>
+      </Tooltip>
+    ),
+    style: "header-two",
+  },
+  {
+    label: (
+      <Tooltip title="見出し3" placement="top">
+        <span>H3</span>
+      </Tooltip>
+    ),
+    style: "header-three",
+  },
   {
     label: (
       <Tooltip title="箇条書き" placement="top">
@@ -200,7 +212,7 @@ const BlockStyleControls = (props: BlockStyleControlsProps) => {
     .getType();
 
   return (
-    <div className="RichEditor-controls">
+    <div style={{ display: "flex", alignItems: "center" }}>
       {BLOCK_TYPES.map((type) => (
         <StyleButton
           key={type.style}
@@ -214,7 +226,7 @@ const BlockStyleControls = (props: BlockStyleControlsProps) => {
   );
 };
 
-var INLINE_STYLES = [
+const INLINE_STYLES = [
   {
     label: (
       <Tooltip title="太文字" placement="top">

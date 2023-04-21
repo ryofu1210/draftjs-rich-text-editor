@@ -9,14 +9,18 @@ import {
   KeyBindingUtil,
   BlockMap,
   ContentState,
+  Modifier,
 } from "draft-js";
 import "draft-js/dist/Draft.css";
-import { savePostToDatabase } from "./savePostToDatabase";
 // import { getPost } from "@/infra/repositories/localstorage/post/getPost";
 // import { createPost } from "@/infra/repositories/localstorage/post/createPost";
 import Editor, { createEditorStateWithText } from "@draft-js-plugins/editor";
 import createInlineToolbarPlugin from "@draft-js-plugins/inline-toolbar";
 import "@draft-js-plugins/inline-toolbar/lib/plugin.css";
+import FormatBoldIcon from "@mui/icons-material/FormatBold";
+import { Tooltip } from "@mui/material";
+import FormatColorTextIcon from "@mui/icons-material/FormatColorText";
+import { COLOR_STYLES } from "./constants";
 
 type Props = {
   rawContentString?: string;
@@ -24,9 +28,11 @@ type Props = {
 };
 
 const colorStyleMap = {
-  RED: { color: "red" },
-  YELLOW: { color: "yellow" },
-  BLUE: { color: "blue" },
+  RED: { color: "#d70910" },
+  YELLOW: { color: "#826f06" },
+  BLUE: { color: "#1453c6" },
+  GRAY: { color: "#6c737b" },
+  DEFAULT_COLOR: { color: "#313f4d" },
 };
 
 const customStyleMap = {
@@ -67,54 +73,6 @@ export const useDraftjs = ({ rawContentString, onSaveClick }: Props) => {
     return "not-handled";
   };
 
-  /**
-   * inlineStyle変更
-   */
-  const onBoldClick = () => {
-    setEditorState(RichUtils.toggleInlineStyle(editorState, "BOLD"));
-  };
-
-  const onItalicClick = () => {
-    setEditorState(RichUtils.toggleInlineStyle(editorState, "ITALIC"));
-  };
-
-  const onUnderlineClick = () => {
-    setEditorState(RichUtils.toggleInlineStyle(editorState, "UNDERLINE"));
-  };
-
-  /**
-   * blockType変更
-   */
-  const onH1Click = () => {
-    setEditorState(RichUtils.toggleBlockType(editorState, "header-one"));
-  };
-
-  /**
-   * List
-   */
-  const onOrderedListClick = () => {
-    setEditorState(RichUtils.toggleBlockType(editorState, "ordered-list-item"));
-  };
-
-  const onUnorderedListClick = () => {
-    setEditorState(
-      RichUtils.toggleBlockType(editorState, "unordered-list-item")
-    );
-  };
-
-  /**
-   * カラー変更
-   */
-  const onRedClick = () => {
-    setEditorState(RichUtils.toggleInlineStyle(editorState, "RED"));
-  };
-  const onBlueClick = () => {
-    setEditorState(RichUtils.toggleInlineStyle(editorState, "BLUE"));
-  };
-  const onYellowClick = () => {
-    setEditorState(RichUtils.toggleInlineStyle(editorState, "YELLOW"));
-  };
-
   const handleSaveClick = async () => {
     const contentState = editorState.getCurrentContent();
     const rawContentState = convertToRaw(contentState);
@@ -152,31 +110,61 @@ export const useDraftjs = ({ rawContentString, onSaveClick }: Props) => {
     setEditorState(RichUtils.toggleInlineStyle(editorState, inlineStyle));
   };
 
+  const toggleColorStyle = (toggledColor: string) => {
+    const selection = editorState.getSelection();
+
+    // Let's just allow one color at a time. Turn off all active colors.
+    const nextContentState = Object.keys(colorStyleMap).reduce(
+      (contentState, color) => {
+        return Modifier.removeInlineStyle(contentState, selection, color);
+      },
+      editorState.getCurrentContent()
+    );
+
+    let nextEditorState = EditorState.push(
+      editorState,
+      nextContentState,
+      "change-inline-style"
+    );
+
+    const currentStyle = editorState.getCurrentInlineStyle();
+
+    // Unset style override for current color.
+    if (selection.isCollapsed()) {
+      nextEditorState = currentStyle.reduce((state, color) => {
+        return RichUtils.toggleInlineStyle(editorState, color!);
+      }, nextEditorState);
+    }
+
+    // If the color is being toggled on, apply it.
+    if (!currentStyle.has(toggledColor)) {
+      nextEditorState = RichUtils.toggleInlineStyle(
+        nextEditorState,
+        toggledColor
+      );
+    }
+
+    setEditorState(nextEditorState);
+    // setEditorState(RichUtils.toggleInlineStyle(editorState, inlineStyle));
+  };
+
+  React.useEffect(() => {
+    const currentContent = editorState.getCurrentContent();
+    const rawContentState = convertToRaw(currentContent);
+    console.log(rawContentState);
+  }, [editorState]);
+
   return {
     editorState,
     setEditorState,
     editorEnabled,
     handleKeyCommand,
-    onBoldClick,
-    onItalicClick,
-    onUnderlineClick,
-    onH1Click,
-    onOrderedListClick,
-    onUnorderedListClick,
     handleSaveClick,
     myKeyBindingFn,
-    onRedClick,
-    onBlueClick,
-    onYellowClick,
     customStyleMap,
     handleDroppedFiles,
     toggleBlockType,
-    toggleInlineStyle
+    toggleInlineStyle,
+    toggleColorStyle,
   };
-};
-
-const contentStateToText = (contentState: ContentState) => {
-  const blockMap = contentState.getBlockMap();
-  const textArray = blockMap.map((block) => block?.getText()).toArray();
-  return textArray.join("\n");
 };
