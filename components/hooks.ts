@@ -17,6 +17,7 @@ import { savePostToDatabase } from "./savePostToDatabase";
 import Editor, { createEditorStateWithText } from "@draft-js-plugins/editor";
 import createInlineToolbarPlugin from "@draft-js-plugins/inline-toolbar";
 import "@draft-js-plugins/inline-toolbar/lib/plugin.css";
+
 type Props = {
   rawContentString?: string;
   onSaveClick?: (rawContentState: any) => void;

@@ -37,9 +37,18 @@ import {
 import createLinkPlugin from "@draft-js-plugins/anchor";
 import editorStyles from "./editorStyle.module.css";
 import StrikethroughSIcon from "@mui/icons-material/StrikethroughS";
+import FormatBoldIcon from "@mui/icons-material/FormatBold";
+import FormatItalicIcon from "@mui/icons-material/FormatItalic";
+import FormatUnderlinedIcon from "@mui/icons-material/FormatUnderlined";
+import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
+import FormatListNumberedIcon from "@mui/icons-material/FormatListNumbered";
+import ClearAllIcon from "@mui/icons-material/ClearAll";
 // Tooltip
 import { Tooltip } from "@mui/material";
 
+/**
+ * BlockTypeに割り当てるスタイル（クラス名）を変更する
+ */
 function customBlockStyleFn(contentBlock: ContentBlock) {
   const type = contentBlock.getType();
   if (type === "blockquote") {
@@ -97,14 +106,16 @@ export const RichTextEditor: React.FC<Props> = ({
 
   return (
     <div style={{}}>
-      <BlockStyleControls
-        editorState={editorState}
-        onToggle={toggleBlockType}
-      />
-      <InlineStyleControls
-        editorState={editorState}
-        onToggle={toggleInlineStyle}
-      />
+      <div style={{ display: "flex", justifyContent: "start" }}>
+        <InlineStyleControls
+          editorState={editorState}
+          onToggle={toggleInlineStyle}
+        />
+        <BlockStyleControls
+          editorState={editorState}
+          onToggle={toggleBlockType}
+        />
+      </div>
       <div className={editorStyles.editor} onClick={focus}>
         <Editor
           editorKey="editor"
@@ -149,16 +160,30 @@ const StyleButton = (props: StyleButtonProps) => {
 };
 
 const BLOCK_TYPES = [
-  { label: "H1", style: "header-one" },
-  { label: "H2", style: "header-two" },
-  { label: "H3", style: "header-three" },
-  { label: "H4", style: "header-four" },
-  { label: "H5", style: "header-five" },
-  { label: "H6", style: "header-six" },
-  { label: "Blockquote", style: "blockquote" },
-  { label: "UL", style: "unordered-list-item" },
-  { label: "OL", style: "ordered-list-item" },
-  { label: "Code Block", style: "code-block" },
+  {
+    label: (
+      <Tooltip title="箇条書き" placement="top">
+        <FormatListBulletedIcon />
+      </Tooltip>
+    ),
+    style: "unordered-list-item",
+  },
+  {
+    label: (
+      <Tooltip title="順序付きリスト" placement="top">
+        <FormatListNumberedIcon />
+      </Tooltip>
+    ),
+    style: "ordered-list-item",
+  },
+  {
+    label: (
+      <Tooltip title="引用タグ" placement="top">
+        <ClearAllIcon />
+      </Tooltip>
+    ),
+    style: "blockquote",
+  },
 ];
 
 type BlockStyleControlsProps = {
@@ -178,7 +203,7 @@ const BlockStyleControls = (props: BlockStyleControlsProps) => {
     <div className="RichEditor-controls">
       {BLOCK_TYPES.map((type) => (
         <StyleButton
-          key={type.label}
+          key={type.style}
           active={type.style === blockType}
           label={type.label}
           onToggle={props.onToggle}
@@ -190,10 +215,30 @@ const BlockStyleControls = (props: BlockStyleControlsProps) => {
 };
 
 var INLINE_STYLES = [
-  { label: "Bold", style: "BOLD" },
-  { label: "Italic", style: "ITALIC" },
-  { label: "Underline", style: "UNDERLINE" },
-  { label: "Monospace", style: "CODE" },
+  {
+    label: (
+      <Tooltip title="太文字" placement="top">
+        <FormatBoldIcon />
+      </Tooltip>
+    ),
+    style: "BOLD",
+  },
+  {
+    label: (
+      <Tooltip title="斜体" placement="top">
+        <FormatItalicIcon />
+      </Tooltip>
+    ),
+    style: "ITALIC",
+  },
+  {
+    label: (
+      <Tooltip title="下線" placement="top">
+        <FormatUnderlinedIcon />
+      </Tooltip>
+    ),
+    style: "UNDERLINE",
+  },
   {
     label: (
       <Tooltip title="取り消し線" placement="top">
